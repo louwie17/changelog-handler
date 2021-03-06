@@ -1,0 +1,14 @@
+{
+  "name": "changelog-handler",
+  "version": "1.0.0",
+  "description": "Allows users to create changelog entries, and release them.",
+  "main": "index.js",
+  "author": "Lourens Schep",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "commander": "^7.1.0",
+    "prettier": "^2.2.1",
+    "yaml": "^1.10.0"
+  }
+}
