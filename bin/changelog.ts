@@ -18,13 +18,16 @@ program
 	.parse(process.argv);
 
 const options = program.opts() as EntryOptions;
-console.log(program.args);
-console.log(options);
+
 new ChangelogEntry({
 	...options,
-	changelogEntry: program.args[0],
+	title: program.args[0],
 })
 	.execute()
 	.then(() => {
 		process.exit();
+	})
+	.catch((error: Error) => {
+		console.log('ERROR: ' + error.message);
+		process.exit(1);
 	});

@@ -1,47 +1,95 @@
-import * as fs from 'fs';
-import YAML from 'yaml';
+import { AssertionError } from 'assert';
+import { constants, accessSync } from 'fs';
 import { getBranchName, getGithubPRNumber } from './git';
+import { Parser } from './parsers';
+import { YamlParser } from './parsers/YamlParser';
 
 export interface EntryOptions {
-	changelogEntry: string;
+	title: string;
 	force: boolean;
-	mergeRequest: number;
 	dryRun: boolean;
 	gitUsername: string;
 	type: string;
+	mergeRequest: string;
+}
+
+interface ChangelogData {
+	title: string;
+	type: string;
+	merge_request: string;
+	author?: string;
 }
 
 export class ChangelogEntry {
-	private options: EntryOptions;
+	private parser: Parser<ChangelogData>;
 
-	constructor(options: EntryOptions) {
-		this.options = options;
+	constructor(private options: EntryOptions) {
+		this.parser = new YamlParser<ChangelogData>();
 	}
 
 	public async execute() {
-		// assert_feature_brach!
-		// assert_title! unless editor
-		// assert_new_file!
+		this.assertTitle(this.options.title);
+		const prNumber = await this.getPRNumber();
+		const branchName = await getBranchName();
+
+		const filepath = `./changelogs/unreleased/${prNumber}-${branchName}.${this.parser.fileExtension}`;
+
+		this.assertNewFile(filepath);
 		// assert_valid_type!
 		// if (this.options.dry_run) {
 		//   write
 		//   amend_commit if options.amend
 		// }
-		// if (editor) {
-		// system("#{editor} '#{file_path}'");
-		// }
-		const yamlStr = YAML.stringify(this.options);
-		await this.write(yamlStr);
+		return await this.write(filepath, prNumber);
 	}
 
-	private async write(yamlStr: string) {
-		const branchName = await getBranchName();
-		console.log(branchName);
-		const prNumber = await getGithubPRNumber();
-		fs.writeFileSync(
-			`./changelogs/unreleased/${branchName}.yaml`,
-			yamlStr,
-			'utf8'
+	private async write(filepath: string, prNumber: string) {
+		return await this.parser.write(
+			{
+				title: this.options.title,
+				merge_request: prNumber,
+				type: this.options.type,
+				author: this.options.gitUsername,
+			},
+			filepath
 		);
+	}
+
+	private async getPRNumber(): Promise<string> {
+		const prNumber = await getGithubPRNumber();
+		if (!prNumber) {
+			throw new AssertionError({
+				message: 'No Pull Request created for this branch!',
+			});
+		}
+		return prNumber;
+	}
+
+	private assertTitle(title: string): void {
+		if (!title) {
+			throw new AssertionError({
+				message:
+					'Provide a title for the changelog entry or use `--amend`" \
+				" to use the title from the previous commit.',
+			});
+		}
+	}
+
+	private assertNewFile(filepath: string) {
+		if (this.options.force) {
+			return;
+		}
+		let exists = false;
+		try {
+			accessSync(filepath, constants.F_OK);
+			exists = true;
+		} catch {
+			// do nothing
+		}
+		if (exists) {
+			throw new AssertionError({
+				message: `${filepath} already exists! Use '--force' to overwrite.`,
+			});
+		}
 	}
 }

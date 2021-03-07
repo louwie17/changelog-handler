@@ -3,9 +3,16 @@ import * as child from 'child_process';
 
 const exec = util.promisify(child.exec);
 
+/**
+ * Trims text and removes newlines as well.
+ */
+function trim(text = ''): string {
+	return text.replace(/^\s+|\s+$/g, '');
+}
+
 export async function getBranchName(): Promise<string> {
 	const { stdout } = await exec('git rev-parse --abbrev-ref HEAD');
-	return stdout;
+	return trim(stdout);
 }
 
 const GET_GIT_PR_BRANCH_COMMAND =
@@ -13,10 +20,8 @@ const GET_GIT_PR_BRANCH_COMMAND =
 export async function getGithubPRNumber(): Promise<string> {
 	try {
 		const { stdout } = await exec(GET_GIT_PR_BRANCH_COMMAND);
-		return stdout;
+		return trim(stdout);
 	} catch (e) {
-		console.log('Failed Receiving Github PR number');
+		return '';
 	}
-	return '';
-	// console.log(stderr);
 }
