@@ -1,7 +1,7 @@
-import * as util from 'util';
+import { promisify } from 'util';
 import * as child from 'child_process';
 
-const exec = util.promisify(child.exec);
+const exec = promisify(child.exec);
 
 /**
  * Trims text and removes newlines as well.
