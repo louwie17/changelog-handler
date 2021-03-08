@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { ChangelogEntry, EntryOptions } from '../src/ChangelogEntry';
+import { ChangelogEntry } from '../src/ChangelogEntry';
+import { EntryOptions } from './types';
 const program = new Command();
 
 program
@@ -15,6 +16,7 @@ program
 	)
 	.option('-t, --type <string>', 'The category of the change')
 	.option('-e, --ee', 'Generate a changelog entry for GitLab EE')
+	.option('-c, --config <configPath>', 'Path of custom changelog config.')
 	.parse(process.argv);
 
 const options = program.opts() as EntryOptions;

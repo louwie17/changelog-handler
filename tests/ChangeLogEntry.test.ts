@@ -5,10 +5,13 @@ jest.mock('child_process', () => ({
 	exec: execMock,
 }));
 
-import { ChangelogEntry, EntryOptions } from '../src/ChangelogEntry';
+import { ChangelogEntry } from '../src/ChangelogEntry';
+import { EntryOptions } from '../src/types/EntryOptions';
 
 describe('ChangelogEntry', () => {
 	beforeEach(() => {
+		(fs.existsSync as jest.Mock).mockReturnValue(false);
+		(fs.accessSync as jest.Mock).mockReturnValue(true);
 		execMock.mockImplementation((command: string, callback) => {
 			if (command.startsWith('git rev-parse')) {
 				callback(null, { stdout: 'main ' });
@@ -17,8 +20,8 @@ describe('ChangelogEntry', () => {
 			}
 		});
 	});
+
 	it('should fail if file already exists without force=true', async () => {
-		(fs.accessSync as jest.Mock).mockReturnValue(true);
 		const entry = new ChangelogEntry({ title: 'test' } as EntryOptions);
 		const fn = jest.fn();
 		try {
@@ -33,7 +36,6 @@ describe('ChangelogEntry', () => {
 	});
 
 	it('should continue creating a file if file already exists with force=true', async () => {
-		(fs.accessSync as jest.Mock).mockReturnValue(true);
 		const entry = new ChangelogEntry({
 			title: 'test',
 			force: true,

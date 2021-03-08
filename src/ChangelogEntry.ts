@@ -2,37 +2,24 @@ import { AssertionError } from 'assert';
 import { constants, accessSync } from 'fs';
 import { getBranchName, getGithubPRNumber } from './git';
 import { Parser } from './parsers';
-import { YamlParser } from './parsers/YamlParser';
-
-export interface EntryOptions {
-	title: string;
-	force: boolean;
-	dryRun: boolean;
-	gitUsername: string;
-	type: string;
-	mergeRequest: string;
-}
-
-interface ChangelogData {
-	title: string;
-	type: string;
-	merge_request: string;
-	author?: string;
-}
+import { ChangelogData, EntryOptions } from './types';
+import { Config } from './config/Config';
+import { defaultConfig } from './defaultConfig';
+import { getConfig } from './config';
 
 export class ChangelogEntry {
+	private config: Config;
 	private parser: Parser<ChangelogData>;
 
-	constructor(private options: EntryOptions) {
-		this.parser = new YamlParser<ChangelogData>();
-	}
+	constructor(private options: EntryOptions) {}
 
 	public async execute() {
 		this.assertTitle(this.options.title);
-		const prNumber = await this.getPRNumber();
+		await this.initialize();
+		const prNumber = '1234'; // await this.getPRNumber();
 		const branchName = await getBranchName();
 
-		const filepath = `./changelogs/unreleased/${prNumber}-${branchName}.${this.parser.fileExtension}`;
+		const filepath = `${this.config.changelogPaths.unreleased}/${prNumber}-${branchName}.${this.parser.fileExtension}`;
 
 		this.assertNewFile(filepath);
 		// assert_valid_type!
@@ -41,6 +28,12 @@ export class ChangelogEntry {
 		//   amend_commit if options.amend
 		// }
 		return await this.write(filepath, prNumber);
+	}
+
+	private async initialize() {
+		this.config = await getConfig(defaultConfig, this.options.config);
+		const ParserClass = this.config.customParsers[this.config.parserType];
+		this.parser = new ParserClass();
 	}
 
 	private async write(filepath: string, prNumber: string) {
