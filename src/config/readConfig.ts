@@ -1,7 +1,7 @@
 import { existsSync, lstatSync } from 'fs';
-import * as path from 'path';
-import interopRequireDefault from '../util/interopRequireDefault';
-import type { Register } from 'ts-node';
+import { dirname, isAbsolute, resolve } from 'path';
+import { interopRequireDefault } from '../util/interopRequireDefault';
+import type { Service } from 'ts-node';
 
 import { Config } from './Config';
 
@@ -44,9 +44,9 @@ function isFile(filePath: string) {
 }
 
 function getConfigPath(configPath: string, cwd: string) {
-	const absolutePath = path.isAbsolute(configPath)
+	const absolutePath = isAbsolute(configPath)
 		? configPath
-		: path.resolve(cwd, configPath);
+		: resolve(cwd, configPath);
 
 	if (isFile(absolutePath)) {
 		return absolutePath;
@@ -69,35 +69,16 @@ export default async function readConfigFileAndSetRootDir(
 	console.log(configPath);
 	try {
 		if (isTS) {
-			configObject = await loadTSConfigFile(configPath);
+			console.log('load TS');
+			configObject = loadTSConfigFile(configPath);
 		} else if (isJS) {
-			configObject = await loadJSConfigFile(configPath);
+			console.log('load JS');
+			configObject = loadJSConfigFile(configPath);
 		} else {
-			configObject = require(configPath);
+			configObject = __non_webpack_require__(configPath);
 		}
 	} catch (error) {
-		console.log(error);
-		if (error.code === 'ERR_REQUIRE_ESM') {
-			try {
-				const importedConfig = await import(configPath);
-
-				if (!importedConfig.default) {
-					throw new Error(
-						`Failed to load config file ${configPath} - did you use a default export?`
-					);
-				}
-
-				configObject = importedConfig.default;
-			} catch (innerError) {
-				if (innerError.message === 'Not supported') {
-					throw new Error(
-						`Your version of Node does not support dynamic import - please enable it or use a .cjs file extension for file ${configPath}`
-					);
-				}
-
-				throw innerError;
-			}
-		} else if (isJSON) {
+		if (isJSON) {
 			throw new Error(`Failed to parse config file ${configPath}\n`);
 		} else if (isTS || isJS) {
 			throw new Error(
@@ -111,16 +92,16 @@ export default async function readConfigFileAndSetRootDir(
 
 	if (configObject && configObject.rootDir) {
 		// We don't touch it if it has an absolute path specified
-		if (!path.isAbsolute(configObject.rootDir)) {
+		if (!isAbsolute(configObject.rootDir)) {
 			// otherwise, we'll resolve it relative to the file's __dirname
-			configObject.rootDir = path.resolve(
-				path.dirname(configPath),
+			configObject.rootDir = resolve(
+				dirname(configPath),
 				configObject.rootDir
 			);
 		}
 	} else {
 		// If rootDir is not there, we'll set it to this file's __dirname
-		configObject.rootDir = path.dirname(configPath);
+		configObject.rootDir = dirname(configPath);
 	}
 
 	return configObject;
@@ -130,11 +111,11 @@ export default async function readConfigFileAndSetRootDir(
 async function loadTSConfigFile(
 	configPath: string
 ): Promise<Config | (() => Config)> {
-	let registerer: Register;
+	let registerer: Service;
 
 	// Register TypeScript compiler instance
 	try {
-		registerer = require('ts-node').register({
+		registerer = __non_webpack_require__('ts-node').register({
 			compilerOptions: {
 				module: 'CommonJS',
 			},
@@ -142,16 +123,19 @@ async function loadTSConfigFile(
 	} catch (e) {
 		if (e.code === 'MODULE_NOT_FOUND') {
 			throw new Error(
-				`Jest: 'ts-node' is required for the TypeScript configuration files. Make sure it is installed\nError: ${e.message}`
+				`'ts-node' is required for the TypeScript configuration files. Make sure it is installed\nError: ${e.message}`
 			);
 		}
 
+		console.log(e);
 		throw e;
 	}
 
 	registerer.enabled(true);
 
-	let configObject = interopRequireDefault(require(configPath)).default;
+	let configObject = interopRequireDefault(
+		__non_webpack_require__(configPath)
+	).default;
 
 	// In case the config is a function which imports more Typescript code
 	if (typeof configObject === 'function') {
@@ -164,7 +148,9 @@ async function loadTSConfigFile(
 }
 
 async function loadJSConfigFile(configPath: string) {
-	let configObject = interopRequireDefault(require(configPath)).default;
+	let configObject = interopRequireDefault(
+		__non_webpack_require__(configPath)
+	).default;
 
 	// In case the config is a function which imports more Typescript code
 	if (typeof configObject === 'function') {

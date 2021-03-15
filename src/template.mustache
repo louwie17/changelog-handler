@@ -1,0 +1,9 @@
+== {{{ title }}} ({{#singleChange}}1 change{{/singleChange}}{{^singleChange}}{{ count }} changes{{/singleChange}})
+
+{{#entries}}
+- {{{ title }}} {{#merge_request}}(#{{merge_request}}){{/merge_request}}
+{{/entries}}
+
+{{#nochanges}}
+No changes.
+{{/nochanges}}

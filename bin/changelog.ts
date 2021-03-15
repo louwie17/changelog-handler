@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { Command } from 'commander';
 import { ChangelogEntry } from '../src/ChangelogEntry';
 import { EntryOptions } from './types';

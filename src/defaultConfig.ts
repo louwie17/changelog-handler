@@ -6,9 +6,10 @@ export const defaultConfig: Config = {
 	parserType: 'yml',
 	changelogPaths: {
 		unreleased: './changelogs/unreleased',
-		release: 'Changelog.md',
+		release: 'CHANGELOG.md',
 	},
 	customParsers: {
 		yml: YamlParser,
 	},
+	changelogIdentifier: /^\=\= [0-9]\.[0-9]\.[0-9].*/,
 };

@@ -11,4 +11,5 @@ export interface Config {
 	customParsers: {
 		[key: string]: new () => Parser<ChangelogData>;
 	};
+	changelogIdentifier: RegExp;
 }
