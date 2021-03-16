@@ -5,7 +5,7 @@ const program = new Command();
 
 program
 	.option('-f, --force', 'Overwrite an existing entry')
-	.option('-v, --version <string>', 'Release version. Ex: 1.1.0')
+	.requiredOption('-v, --version <string>', 'Release version. Ex: 1.1.0')
 	.option('-d, --date', 'Date of release, defaults to today')
 	.option('-n, --dry-run', "Don't actually write anything, just print")
 	.option('-cp, --cherry-pick', 'Cherry pick a pull request')
@@ -17,12 +17,17 @@ program
 
 const options = program.opts() as ReleaseOptions;
 
+if (options.cherryPick && !options.prNumbers) {
+	console.error('ERROR: --pr-numbers is required for a cherry-pick');
+	process.exit(1);
+}
+
 new Release(options)
 	.execute()
 	.then(() => {
 		process.exit();
 	})
 	.catch((error: Error) => {
-		console.log('ERROR: ' + error.message);
+		console.error('ERROR: ' + error.message);
 		process.exit(1);
 	});

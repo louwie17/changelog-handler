@@ -16,7 +16,7 @@ export class ChangelogEntry {
 	public async execute() {
 		this.assertTitle(this.options.title);
 		await this.initialize();
-		const prNumber = '1234'; // await this.getPRNumber();
+		const prNumber = await this.getPRNumber();
 		const branchName = await getBranchName();
 
 		const filepath = `${this.config.changelogPaths.unreleased}/${prNumber}-${branchName}.${this.parser.fileExtension}`;
@@ -49,6 +49,9 @@ export class ChangelogEntry {
 	}
 
 	private async getPRNumber(): Promise<string> {
+		if (this.options && this.options.mergeRequest) {
+			return this.options.mergeRequest;
+		}
 		const prNumber = await getGithubPRNumber();
 		if (!prNumber) {
 			throw new AssertionError({

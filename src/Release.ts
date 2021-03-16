@@ -10,7 +10,10 @@ import { ChangelogData, ReleaseOptions } from './types';
 import markupTemplate from './template.mustache';
 import { createInterface } from 'readline';
 import { once } from 'events';
-import { insertChangelog } from './transform/insertChangelog';
+import {
+	addCherrypickChangelog,
+	insertChangelog,
+} from './transform/insertChangelog';
 
 /*
  * - Put the mark up in the necessary spot in the changelog
@@ -40,7 +43,10 @@ export class Release {
 		}
 		const markdown = this.toMarkdown(entries.map((e) => e.data));
 		// console.log(markdown);
-		const success = this.getWriteLocations(markdown);
+		const success = this.writeChangelog(
+			markdown,
+			entries.map((e) => e.data.merge_request)
+		);
 		if (success) {
 			this.removeChangelogEntries(entries.map((e) => e.path));
 		}
@@ -60,13 +66,21 @@ export class Release {
 			return [];
 		}
 		const files = readdirSync(this.config.changelogPaths.unreleased);
-		return files.map((file) => {
+		const entries = files.map((file) => {
 			const filePath = this.config.changelogPaths.unreleased + '/' + file;
 			return {
 				path: filePath,
 				data: this.parser.read(filePath),
 			};
 		});
+		if (this.options.prNumbers) {
+			return entries.filter((entry) => {
+				return this.options.prNumbers?.includes(
+					entry.data.merge_request
+				);
+			});
+		}
+		return entries;
 	}
 
 	private removeChangelogEntries(entries: string[]): void {
@@ -97,14 +111,23 @@ export class Release {
 		return rendered;
 	}
 
-	private getWriteLocations(newChangelog: string) {
+	private writeChangelog(newChangelog: string, prNumbers: string[]) {
 		const changelogPath = path.resolve(
 			process.cwd(),
 			this.config.changelogPaths.release
 		);
+		if (this.options.cherryPick) {
+			return addCherrypickChangelog(
+				changelogPath,
+				this.config.changelogIdentifier,
+				this.options.version,
+				newChangelog,
+				prNumbers
+			);
+		}
 		return insertChangelog(
 			changelogPath,
-			/^\=\= [0-9]\.[0-9]\.[0-9].*/,
+			this.config.changelogIdentifier,
 			newChangelog
 		);
 		// await this.processLineByLine(changelogPath);
