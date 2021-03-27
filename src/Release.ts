@@ -42,12 +42,11 @@ export class Release {
 			return;
 		}
 		const markdown = this.toMarkdown(entries.map((e) => e.data));
-		// console.log(markdown);
 		const success = this.writeChangelog(
 			markdown,
 			entries.map((e) => e.data.merge_request)
 		);
-		if (success) {
+		if (success && !this.options.dryRun) {
 			this.removeChangelogEntries(entries.map((e) => e.path));
 		}
 	}
@@ -116,6 +115,10 @@ export class Release {
 			process.cwd(),
 			this.config.changelogPaths.release
 		);
+		if (this.options.dryRun) {
+			console.log(`Writing to ${changelogPath}: \n${newChangelog}`);
+			return;
+		}
 		if (this.options.cherryPick) {
 			return addCherrypickChangelog(
 				changelogPath,
