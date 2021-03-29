@@ -64,10 +64,10 @@ describe('Release', () => {
 					return '';
 				}
 			);
-			parserReadMock.mockImplementation(() => {
+			parserReadMock.mockImplementation((filepath: string) => {
 				return {
 					title: 'test',
-					merge_request: 1234,
+					merge_request: filepath.includes('1234') ? '1234' : '2222',
 				};
 			});
 		});
@@ -118,7 +118,6 @@ describe('Release', () => {
 
 		it('should correct add new changelog above last one', async () => {
 			(fs.readFileSync as jest.Mock).mockClear();
-			console.log(testChangelog);
 			(fs.readFileSync as jest.Mock).mockImplementation(
 				(command: string) => {
 					return testChangelog;
@@ -139,6 +138,32 @@ describe('Release', () => {
 			expect(changelog).toMatchSnapshot();
 			expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
 			expect(fs.unlinkSync).toHaveBeenCalledTimes(2);
+			global.Date = originalDate;
+		});
+
+		it('should correctly add a cherry pick', async () => {
+			(fs.readFileSync as jest.Mock).mockClear();
+			(fs.readFileSync as jest.Mock).mockImplementation(
+				(command: string) => {
+					return testChangelog;
+				}
+			);
+			const originalDate = global.Date;
+			// @ts-ignore
+			global.Date = MockDate;
+			const entry = new Release({
+				version: '1.1.0',
+				cherryPick: true,
+				prNumbers: ['1234'],
+			} as ReleaseOptions);
+			await entry.execute();
+
+			expect(fs.readdirSync).toBeCalledTimes(1);
+
+			const changelog = (fs.writeFileSync as jest.Mock).mock.calls[0][1];
+			expect(changelog).toMatchSnapshot();
+			expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
+			expect(fs.unlinkSync).toHaveBeenCalledTimes(1);
 			global.Date = originalDate;
 		});
 	});
