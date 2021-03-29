@@ -3,6 +3,6 @@ module.exports = {
 	testEnvironment: 'node',
 	modulePathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/node_modules/'],
 	transform: {
-		'\\.(mustache)$': '<rootDir>/tests/rawLoader.js',
+		'\\.(mustache|md)$': '<rootDir>/tests/rawLoader.js',
 	},
 };
