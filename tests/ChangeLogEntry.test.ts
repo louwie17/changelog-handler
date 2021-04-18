@@ -22,7 +22,10 @@ describe('ChangelogEntry', () => {
 	});
 
 	it('should fail if file already exists without force=true', async () => {
-		const entry = new ChangelogEntry({ title: 'test' } as EntryOptions);
+		const entry = new ChangelogEntry({
+			title: 'test',
+			type: 'fix',
+		} as EntryOptions);
 		const fn = jest.fn();
 		try {
 			await entry.execute();
@@ -38,6 +41,7 @@ describe('ChangelogEntry', () => {
 	it('should continue creating a file if file already exists with force=true', async () => {
 		const entry = new ChangelogEntry({
 			title: 'test',
+			type: 'fix',
 			force: true,
 		} as EntryOptions);
 		await entry.execute();

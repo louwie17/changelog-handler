@@ -1,5 +1,5 @@
 import { AssertionError } from 'assert';
-import { constants, accessSync } from 'fs';
+import { constants, accessSync, existsSync, mkdirSync } from 'fs';
 import { getBranchName, getGithubPRNumber } from './git';
 import { Parser } from './parsers';
 import { ChangelogData, EntryOptions } from './types';
@@ -15,9 +15,12 @@ export class ChangelogEntry {
 
 	public async execute() {
 		this.assertTitle(this.options.title);
+		this.assertType(this.options.type);
 		await this.initialize();
 		const prNumber = await this.getPRNumber();
 		const branchName = await getBranchName();
+
+		this.assertChangelogDirectory(this.config.changelogPaths.unreleased);
 
 		const filepath = `${this.config.changelogPaths.unreleased}/${prNumber}-${branchName}.${this.parser.fileExtension}`;
 
@@ -37,15 +40,15 @@ export class ChangelogEntry {
 	}
 
 	private async write(filepath: string, prNumber: string) {
-		return await this.parser.write(
-			{
-				title: this.options.title,
-				merge_request: prNumber,
-				type: this.options.type,
-				author: this.options.gitUsername,
-			},
-			filepath
-		);
+		const data: ChangelogData = {
+			title: this.options.title,
+			merge_request: prNumber,
+			type: this.options.type,
+		};
+		if (this.options.gitUsername) {
+			data.author = this.options.gitUsername;
+		}
+		return await this.parser.write(data, filepath);
 	}
 
 	private async getPRNumber(): Promise<string> {
@@ -64,9 +67,16 @@ export class ChangelogEntry {
 	private assertTitle(title: string): void {
 		if (!title) {
 			throw new AssertionError({
+				message: 'Provide a title for the changelog entry.',
+			});
+		}
+	}
+
+	private assertType(type: string): void {
+		if (!type) {
+			throw new AssertionError({
 				message:
-					'Provide a title for the changelog entry or use `--amend`" \
-				" to use the title from the previous commit.',
+					'Provide a type for the changelog entry using -t or --type',
 			});
 		}
 	}
@@ -85,6 +95,14 @@ export class ChangelogEntry {
 		if (exists) {
 			throw new AssertionError({
 				message: `${filepath} already exists! Use '--force' to overwrite.`,
+			});
+		}
+	}
+
+	private assertChangelogDirectory(changelogDirectoryPath: string) {
+		if (!existsSync(changelogDirectoryPath)) {
+			mkdirSync(changelogDirectoryPath, {
+				recursive: true,
 			});
 		}
 	}

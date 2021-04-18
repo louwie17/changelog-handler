@@ -1,8 +1,9 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
 	target: 'node',
-	mode: 'development',
+	mode: 'production',
 	entry: {
 		changelog: './bin/changelog.ts',
 		release: './bin/release.ts',
@@ -27,5 +28,10 @@ module.exports = {
 		filename: '[name].js',
 		path: path.resolve(__dirname, 'build'),
 	},
-	watch: true,
+	plugins: [
+		new webpack.BannerPlugin({
+			banner: '#!/usr/bin/env node',
+			raw: true,
+		}),
+	],
 };

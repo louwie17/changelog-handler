@@ -11,8 +11,13 @@ function trim(text = ''): string {
 }
 
 export async function getBranchName(): Promise<string> {
-	const { stdout } = await exec('git rev-parse --abbrev-ref HEAD');
-	return trim(stdout);
+	try {
+		const { stdout } = await exec('git rev-parse --abbrev-ref HEAD');
+		return trim(stdout);
+	} catch {
+		const { stdout } = await exec('git branch --show-current');
+		return trim(stdout);
+	}
 }
 
 const GET_GIT_PR_BRANCH_COMMAND =

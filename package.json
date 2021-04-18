@@ -2,12 +2,14 @@
   "name": "changelog-handler",
   "version": "1.0.0",
   "description": "Allows users to create changelog entries, and release them.",
-  "main": "index.js",
+  "main": "src/index.ts",
   "author": "Lourens Schep",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "webpack",
+    "build": "npm run clean && webpack && chmod +x ./build/*.js",
+    "clean": "rm -rf build",
+    "dev": "webpack --watch --mode development",
     "changelog": "webpack && node ./build/changelog.js",
     "release": "webpack && node ./build/release.js",
     "test": "jest"
@@ -34,6 +36,7 @@
     "webpack-cli": "^4.5.0"
   },
   "bin": {
-    "changelog": "./bin/changelog"
+    "changelog": "./build/changelog.js",
+    "release": "./build/release.js"
   }
 }
