@@ -13,16 +13,26 @@ type ReadConfig = {
 const JSON_EXT = 'json';
 const TS_EXT = 'ts';
 const JS_EXT = 'js';
-const CONFIG_NAME = '.changelog.config.ts';
+const CONFIG_NAME = '.changelog.config';
 
 export async function readConfig(
 	configPath?: string
 ): Promise<ReadConfig | null> {
 	let rawOptions: Config | (() => Config);
-	const actualConfigPath = getConfigPath(
-		configPath || CONFIG_NAME,
-		process.cwd()
-	);
+	const potentialConfigPaths = [
+		configPath,
+		...[JSON_EXT, JS_EXT, TS_EXT].map((ext) => CONFIG_NAME + '.' + ext),
+	];
+	let actualConfigPath;
+	for (const path of potentialConfigPaths) {
+		if (!path) {
+			continue;
+		}
+		actualConfigPath = getConfigPath(path, process.cwd());
+		if (actualConfigPath) {
+			break;
+		}
+	}
 	if (!actualConfigPath) {
 		return null;
 	}
@@ -69,10 +79,8 @@ export default async function readConfigFileAndSetRootDir(
 	console.log(configPath);
 	try {
 		if (isTS) {
-			console.log('load TS');
 			configObject = loadTSConfigFile(configPath);
 		} else if (isJS) {
-			console.log('load JS');
 			configObject = loadJSConfigFile(configPath);
 		} else {
 			configObject = __non_webpack_require__(configPath);
