@@ -1,4 +1,4 @@
-import { createReadStream, readdirSync, unlinkSync } from 'fs';
+import { existsSync, readdirSync, unlinkSync, writeFileSync } from 'fs';
 import * as path from 'path';
 import Mustache from 'mustache';
 
@@ -8,8 +8,6 @@ import { defaultConfig } from './defaultConfig';
 import { Parser } from './parsers';
 import { ChangelogData, ReleaseOptions } from './types';
 import markupTemplate from './template.mustache';
-import { createInterface } from 'readline';
-import { once } from 'events';
 import {
 	addCherrypickChangelog,
 	insertChangelog,
@@ -48,6 +46,10 @@ export class Release {
 		);
 		if (success && !this.options.dryRun) {
 			this.removeChangelogEntries(entries.map((e) => e.path));
+
+			console.log(
+				`Successfully updated: ${this.config.changelogPaths.release}`
+			);
 		}
 	}
 
@@ -115,6 +117,7 @@ export class Release {
 			process.cwd(),
 			this.config.changelogPaths.release
 		);
+		this.assertChangelogFile(changelogPath);
 		if (this.options.dryRun) {
 			console.log(`Writing to ${changelogPath}: \n${newChangelog}`);
 			return;
@@ -133,32 +136,14 @@ export class Release {
 			this.config.changelogIdentifier,
 			newChangelog
 		);
-		// await this.processLineByLine(changelogPath);
 	}
 
-	private async processLineByLine(fileName: string) {
-		try {
-			const stream = createReadStream(fileName);
-			const rl = createInterface({
-				input: stream,
-				crlfDelay: Infinity,
-			});
-
-			let fileLength = 0;
-			rl.on('line', (line) => {
-				fileLength += line.length + 1;
-				console.log(line);
-				if (fileLength > 100) {
-					rl.close();
-				}
-			});
-
-			await once(rl, 'close');
-
-			console.log(fileLength);
-			console.log('File processed.');
-		} catch (err) {
-			console.error(err);
+	private assertChangelogFile(changelogPath: string) {
+		if (!existsSync(changelogPath)) {
+			console.warn(
+				`Could not find changelog file: ${this.config.changelogPaths.release}, creating one instead.`
+			);
+			writeFileSync(changelogPath, '');
 		}
 	}
 }

@@ -70,7 +70,7 @@ export function insertChangelog(
 		return false;
 	}
 	changelogLines.splice(insertLineNumber, 0, changelog);
-	// console.log(changelogLines.join('\n'));
+
 	writeFileSync(filePath, changelogLines.join('\n'));
 	return true;
 }
