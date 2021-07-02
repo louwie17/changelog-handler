@@ -4,6 +4,10 @@ Handles changelog entries by storing them as seperate files within a changelog f
 
 ## Installation
 
+```
+npm install changelog-handler --save-dev
+```
+
 ## Configure (optional)
 
 ```json

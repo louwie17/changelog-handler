@@ -1,6 +1,6 @@
 {
   "name": "changelog-handler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Allows users to create changelog entries and release them.",
   "main": "src/index.ts",
   "author": "Lourens Schep",
