@@ -1,11 +1,14 @@
 {
   "name": "changelog-handler",
   "version": "1.0.0",
-  "description": "Allows users to create changelog entries, and release them.",
+  "description": "Allows users to create changelog entries and release them.",
   "main": "src/index.ts",
   "author": "Lourens Schep",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/louwie17/changelog-handler.git"
+  },
   "license": "MIT",
-  "private": true,
   "scripts": {
     "build": "npm run clean && webpack && chmod +x ./build/*.js",
     "clean": "rm -rf build",
