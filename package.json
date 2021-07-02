@@ -12,6 +12,7 @@
     "dev": "webpack --watch --mode development",
     "changelog": "webpack && node ./build/changelog.js",
     "release": "webpack && node ./build/release.js",
+    "format": "prettier {src,src/**,bin,tests}/*.{md,js,jsx,ts,tsx} --write",
     "test": "jest"
   },
   "dependencies": {

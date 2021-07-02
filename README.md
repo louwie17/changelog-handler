@@ -9,10 +9,10 @@ Handles changelog entries by storing them as seperate files within a changelog f
 ```json
 // .changelog.config.json
 {
-	"changelogPaths": {
-		"unreleased": "./changelogs",
-		"release": "changelog.md" //
-	}
+  "changelogPaths": {
+    "unreleased": "./changelogs",
+    "release": "changelog.md" //
+  }
 }
 ```
 
@@ -49,26 +49,26 @@ The custom parser should follow the format of the [Parser abstract](./src/parser
 // .changelog.config.js
 const Parser = require('./parser');
 const config = {
-	parserType: 'test',
-	customParsers: {
-		test: Parser,
-	},
+  parserType: 'test',
+  customParsers: {
+    test: Parser,
+  },
 };
 module.exports = config;
 
 // parser.js
 class Parser {
-	constructor() {
-		this.fileExtension = 'test';
-	}
+  constructor() {
+    this.fileExtension = 'test';
+  }
 
-	write(data, filepath) {
-		console.log(data, filepath);
-	}
+  write(data, filepath) {
+    console.log(data, filepath);
+  }
 
-	read(filepath) {
-		console.log(filepath);
-	}
+  read(filepath) {
+    console.log(filepath);
+  }
 }
 
 module.exports = Parser;

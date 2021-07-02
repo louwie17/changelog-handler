@@ -1,6 +1,6 @@
 const config = {
-	useTabs: true,
-	tabWidth: 4,
+	useTabs: false,
+	tabWidth: 2,
 	printWidth: 80,
 	singleQuote: true,
 	trailingComma: 'es5',
