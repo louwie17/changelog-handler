@@ -4,18 +4,26 @@ Handles changelog entries by storing them as seperate files within a changelog f
 
 ## Installation
 
-
 ## Configure (optional)
 
 ```json
 // .changelog.config.json
 {
 	"changelogPaths": {
-		"unreleased": "./changelogs", // changelog entry paths
-		"release": "changelog.md" // name/path of changelog release file
+		"unreleased": "./changelogs",
+		"release": "changelog.md" //
 	}
 }
 ```
+
+| Config options            | Description                                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| changelogPaths.unreleased | changelog entry paths                                                                              |
+| changelogPaths.release    | name + path of changelog release file                                                              |
+| parserType                | parser type, must match supported types in customParsers                                           |
+| customParsers             | Object of key value pairs of custom parsers (see example below)                                    |
+| changelogIdentifier       | Regex of changelog identifier to match in changelog file: Default: `/^\=\= [0-9]\.[0-9]\.[0-9].*/` |
+| rootDir                   | To specify a different root directory for changelog entries (default: '')                          |
 
 Config files can also be stored as `js` or `ts` files, or specified using the `--config <config path>` param.
 
@@ -41,26 +49,26 @@ The custom parser should follow the format of the [Parser abstract](./src/parser
 // .changelog.config.js
 const Parser = require('./parser');
 const config = {
-    parserType: 'test',
+	parserType: 'test',
 	customParsers: {
 		test: Parser,
-	}
-}
+	},
+};
 module.exports = config;
 
 // parser.js
 class Parser {
-    constructor() {
-        this.fileExtension = 'test';
-    }
+	constructor() {
+		this.fileExtension = 'test';
+	}
 
-    write(data, filepath) {
-        console.log(data, filepath);
-    }
+	write(data, filepath) {
+		console.log(data, filepath);
+	}
 
-    read(filepath) {
-        console.log(filepath);
-    }
+	read(filepath) {
+		console.log(filepath);
+	}
 }
 
 module.exports = Parser;
