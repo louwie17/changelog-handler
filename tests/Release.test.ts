@@ -26,7 +26,12 @@ class MockDate extends Date {
 describe('Release', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (fs.existsSync as jest.Mock).mockReturnValue(false);
+    (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
+      if (path.endsWith('CHANGELOG.md')) {
+        return true;
+      }
+      return false;
+    });
     (fs.accessSync as jest.Mock).mockReturnValue(true);
   });
 

@@ -118,7 +118,6 @@ export function addCherrypickChangelog(
     0,
     removeChangelogHeader(changelog, prNumbers)
   );
-  // console.log(changelogLines.join('\n'));
   writeFileSync(filePath, changelogLines.join('\n'));
   return true;
 }

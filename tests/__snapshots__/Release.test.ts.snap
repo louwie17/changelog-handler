@@ -9,19 +9,25 @@ exports[`Release with entries should correct add new changelog above last one 1`
 - test (#2222)
 
 == 1.1.1 3/14/2021 (1 change)
+
 - changelog (#1234)
 
 == 1.1.0 3/14/2021 (1 change)
-- changelog (#1234)"
+
+- changelog (#1234)
+"
 `;
 
 exports[`Release with entries should correctly add a cherry pick 1`] = `
 "My test changelog entries
 
 == 1.1.1 3/14/2021 (1 change)
+
 - changelog (#1234)
 
 == 1.1.0 3/14/2021 (1 change)
+
 - changelog (#1234)
-- test (#1234)"
+- test (#1234)
+"
 `;

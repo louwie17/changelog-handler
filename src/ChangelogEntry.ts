@@ -84,13 +84,17 @@ export class ChangelogEntry {
     if (this.options.force) {
       return;
     }
+    let exists = false;
     try {
       accessSync(filepath, constants.F_OK);
+      exists = true;
+    } catch {
+      // do nothing
+    }
+    if (exists) {
       throw new AssertionError({
         message: `${filepath} already exists! Use '--force' to overwrite.`,
       });
-    } catch {
-      // do nothing
     }
   }
 
