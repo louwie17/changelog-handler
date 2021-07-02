@@ -4,6 +4,8 @@ jest.mock('fs');
 import { Release } from '../src/Release';
 import { ReleaseOptions } from '../src/types';
 import testChangelog from './testChangelog.md';
+import { readConfig } from '../src/config/readConfig';
+import { getAbsolutePath } from '../src/util/getAbsolutePath';
 
 const parserReadMock = jest.fn();
 jest.mock('../src/parsers/YamlParser', () => ({
@@ -12,6 +14,13 @@ jest.mock('../src/parsers/YamlParser', () => ({
       read: parserReadMock,
     };
   }),
+}));
+
+jest.mock('../src/config/readConfig', () => ({
+  readConfig: jest.fn().mockReturnValue(null),
+}));
+jest.mock('../src/util/getAbsolutePath', () => ({
+  getAbsolutePath: jest.fn().mockReturnValue(null),
 }));
 
 class MockDate extends Date {
@@ -157,6 +166,57 @@ describe('Release', () => {
       expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
       expect(fs.unlinkSync).toHaveBeenCalledTimes(1);
       global.Date = originalDate;
+    });
+
+    describe('custom release template', () => {
+      it('should allow users to pass in a custom releaseTemplate string', async () => {
+        (readConfig as jest.Mock).mockReturnValue({
+          config: { releaseTemplate: '== {{ version }} ({{count}})' },
+        });
+        const originalDate = global.Date;
+        // @ts-ignore
+        global.Date = MockDate;
+        const entry = new Release({
+          version: '1.0.0',
+        } as ReleaseOptions);
+        await entry.execute();
+
+        expect(fs.readdirSync).toBeCalledTimes(1);
+
+        const changelog = (fs.writeFileSync as jest.Mock).mock.calls[0][1];
+        expect(changelog).toMatch('== 1.0.0 (2)');
+        expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
+        expect(fs.unlinkSync).toHaveBeenCalledTimes(2);
+        global.Date = originalDate;
+      });
+
+      it('should allow users to pass in a custom releaseTemplatePath file', async () => {
+        (readConfig as jest.Mock).mockReturnValue({
+          config: { releaseTemplateFile: './template.mustache' },
+        });
+        (getAbsolutePath as jest.Mock).mockImplementation((path) => path);
+        (fs.readFileSync as jest.Mock).mockImplementation((file: string) => {
+          if (file.endsWith('template.mustache')) {
+            return '== {{ version }} ({{count}})';
+          }
+          return '';
+        });
+        const originalDate = global.Date;
+        // @ts-ignore
+        global.Date = MockDate;
+        const entry = new Release({
+          version: '1.0.0',
+        } as ReleaseOptions);
+        await entry.execute();
+
+        expect(fs.readdirSync).toBeCalledTimes(1);
+
+        const changelog = (fs.writeFileSync as jest.Mock).mock.calls[0][1];
+        expect(changelog).toMatch('== 1.0.0 (2)');
+        expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
+        expect(fs.unlinkSync).toHaveBeenCalledTimes(2);
+        global.Date = originalDate;
+      });
     });
   });
 });
