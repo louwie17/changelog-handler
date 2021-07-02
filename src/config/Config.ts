@@ -12,4 +12,6 @@ export interface Config {
     [key: string]: new () => Parser<ChangelogData>;
   };
   changelogIdentifier: RegExp;
+  releaseTemplate: string;
+  releaseTemplateFile: string;
 }

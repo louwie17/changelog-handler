@@ -4,6 +4,7 @@ import { interopRequireDefault } from '../util/interopRequireDefault';
 import type { Service } from 'ts-node';
 
 import { Config } from './Config';
+import { getAbsolutePath } from '../util';
 
 type ReadConfig = {
   configPath: string;
@@ -28,7 +29,7 @@ export async function readConfig(
     if (!path) {
       continue;
     }
-    actualConfigPath = getConfigPath(path, process.cwd());
+    actualConfigPath = getAbsolutePath(path);
     if (actualConfigPath) {
       break;
     }
@@ -49,20 +50,6 @@ export async function readConfig(
   };
 }
 
-function isFile(filePath: string) {
-  return existsSync(filePath) && !lstatSync(filePath).isDirectory();
-}
-
-function getConfigPath(configPath: string, cwd: string) {
-  const absolutePath = isAbsolute(configPath)
-    ? configPath
-    : resolve(cwd, configPath);
-
-  if (isFile(absolutePath)) {
-    return absolutePath;
-  }
-}
-
 // Read the configuration and set its `rootDir`
 // 1. If it's a `package.json` file, we look into its "jest" property
 // 2. If it's a `jest.config.ts` file, we use `ts-node` to transpile & require it
@@ -76,7 +63,6 @@ export default async function readConfigFileAndSetRootDir(
   const isJSON = configPath.endsWith(JSON_EXT);
   let configObject;
 
-  console.log(configPath);
   try {
     if (isTS) {
       configObject = loadTSConfigFile(configPath);

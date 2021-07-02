@@ -1,4 +1,10 @@
-import { existsSync, readdirSync, unlinkSync, writeFileSync } from 'fs';
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from 'fs';
 import * as path from 'path';
 import Mustache from 'mustache';
 
@@ -12,6 +18,8 @@ import {
   addCherrypickChangelog,
   insertChangelog,
 } from './transform/insertChangelog';
+import { isAbsolute, resolve } from 'path';
+import { getAbsolutePath } from './util';
 
 /*
  * - Put the mark up in the necessary spot in the changelog
@@ -98,9 +106,23 @@ export class Release {
       const today = new Date();
       date = today.toLocaleDateString();
     }
-    // const template = readFileSync(markupTemplate, 'utf8'); for custom template
-    const rendered = Mustache.render(markupTemplate, {
+    let template = markupTemplate;
+    if (this.config.releaseTemplate) {
+      template = this.config.releaseTemplate;
+    } else if (this.config.releaseTemplateFile) {
+      const templatePath = getAbsolutePath(
+        this.config.releaseTemplateFile,
+        this.config.rootDir
+      );
+      if (templatePath) {
+        template = readFileSync(templatePath, 'utf8');
+      }
+    }
+
+    const rendered = Mustache.render(template, {
       entries,
+      version: this.options.version,
+      date: this.options.date,
       title: this.options.title
         ? this.options.title
         : `${this.options.version} ${date}`,

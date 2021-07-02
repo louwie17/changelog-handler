@@ -12,4 +12,6 @@ export const defaultConfig: Config = {
     yml: YamlParser,
   },
   changelogIdentifier: /^\=\= [0-9]\.[0-9]\.[0-9].*/,
+  releaseTemplateFile: '',
+  releaseTemplate: '',
 };

@@ -6,6 +6,7 @@ const program = new Command();
 program
   .option('-f, --force', 'Overwrite an existing entry')
   .requiredOption('-v, --version <string>', 'Release version. Ex: 1.1.0')
+  .option('-t, --title <string>', 'Custom release title')
   .option('-d, --date', 'Date of release, defaults to today')
   .option('-n, --dry-run', "Don't actually write anything, just print")
   .option('-cp, --cherry-pick', 'Cherry pick a pull request')
