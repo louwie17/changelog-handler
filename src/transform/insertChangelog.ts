@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync } from 'fs';
-import { TransformCallback } from 'node:stream';
-import { Transform, TransformOptions } from 'stream';
+import { Transform, TransformOptions, TransformCallback } from 'stream';
 
 // Transform sctreamer to remove first line
 class RemoveFirstLine extends Transform {
