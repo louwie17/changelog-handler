@@ -124,8 +124,9 @@ async function loadTSConfigFile(
 
   registerer.enabled(true);
 
-  let configObject = interopRequireDefault(__non_webpack_require__(configPath))
-    .default;
+  let configObject = interopRequireDefault(
+    __non_webpack_require__(configPath)
+  ).default;
 
   // In case the config is a function which imports more Typescript code
   if (typeof configObject === 'function') {
@@ -138,8 +139,9 @@ async function loadTSConfigFile(
 }
 
 async function loadJSConfigFile(configPath: string) {
-  let configObject = interopRequireDefault(__non_webpack_require__(configPath))
-    .default;
+  let configObject = interopRequireDefault(
+    __non_webpack_require__(configPath)
+  ).default;
 
   // In case the config is a function which imports more Typescript code
   if (typeof configObject === 'function') {
